@@ -1,7 +1,26 @@
 #! /bin/bash
 
-if [ -f "./rpc_server_var.sh" ]; then
-    source "./rpc_server_var.sh"
+set -e
+
+usage() {
+    echo "Usage: sh $0 <configFile> <start|stop>"
+    exit 1
+}
+
+# ----------------------------------------
+
+if [ $# -lt 2 ]; then
+    usage
+fi
+
+CONFIG_FILE=$1
+COMMAND=$2
+
+if [ -f "$CONFIG_FILE" ]; then
+    source "$CONFIG_FILE"
+else
+    echo "config file not found: $CONFIG_FILE"
+    usage
 fi
 
 RPC_SERVER_NAME=${RPC_SERVER_NAME:-""}
@@ -11,6 +30,8 @@ if [ ${#RPC_SERVER_NAME} -le 0 ]; then
 fi
 
 DOCKER_EXEC="${DOCKER_EXEC:-docker}"
+
+# ----------------------------------------
 
 # start rpc server
 do_start() {
@@ -90,11 +111,15 @@ EOF
     done
 }
 
+# ----------------------------------------
+
 do_stop() {
     $DOCKER_EXEC stop $RPC_SERVER_NAME && $DOCKER_EXEC rm $RPC_SERVER_NAME > /dev/null
 }
 
-case "$1" in
+# ----------------------------------------
+
+case "$COMMAND" in
     start)
     do_start
     ;;
